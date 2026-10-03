@@ -14,27 +14,42 @@ def parse(r):
 def models_txt(model):
     m18={"iPhone 17 Pro":"iPhone 18 Pro","iPhone 17 Pro Max":"iPhone 18 Pro Max"}
     return model,m18.get(model)
+FILLER={"and","with","of","the","a","an","in","on","for","to"}
+def short_print(pn,budget):
+    words=[w for w in re.sub(r"[^A-Za-z0-9' -]"," ",pn).split() if w.lower() not in FILLER] or pn.split()
+    out=""
+    for w in words:
+        cand=(out+" "+w).strip()
+        if len(cand)<=budget: out=cand
+        else: break
+    return out or words[0]
 def build(r):
     model,pn,detail=parse(r)
     m17,m18=models_txt(model)
-    # title: brand + type + model(+18) + attr
     if m18:
-        title=f"{BRAND} Clear Magnetic Case for {m17}/{m18.replace('iPhone ','')}, MagSafe Compatible"
+        mt=f"iPhone {m18.split()[1]}/{m17.split()[1]} {' '.join(m17.split()[2:])}"   # iPhone 18/17 Pro Max
+        fits=f"{m18} and {m17}"; hl_fit=f"{m18}/{m17.replace('iPhone ','')}"
     else:
-        title=f"{BRAND} Clear Magnetic Case for {m17}, Compatible with MagSafe"
-    fits=f"{m17} and {m18}" if m18 else m17
-    hl=f"{pn} print on a clear case for {m17}; magnetic ring compatible with MagSafe"
+        mt=m17; fits=m17; hl_fit=m17
+    head=f"{BRAND} Clear Magnetic Case for {mt}"
+    budget=75-len(head)-2                  # ", " separator
+    ps=short_print(pn,budget)
+    title=f"{head}, {ps}"
+    hl=f"{pn} print on a clear case; fits {hl_fit}; magnetic ring compatible with MagSafe"
+    if len(hl)>125: hl=f"{pn} clear case; fits {hl_fit}; magnet ring compatible with MagSafe"
+    d=(detail[0].upper()+detail[1:]) if detail else "Decorative print on the clear back"
     b=[
      "Magnetic ring: Built-in ring compatible with MagSafe chargers and accessories; N45 magnet, 2300 Gs, 55 mm outer and 46 mm inner diameter",
-     f"Fits {fits}: Precise camera cutout keeps the lens area open; clear back lets the phone color show through",
-     f"Clear TPU back: 2.12 mm thick TPU back panel in a slim, lightweight case that guards against everyday scratches and bumps",
-     f"{pn} design: {detail[0].upper()+detail[1:]}" if detail else f"{pn} design on the clear back",
-     f"Phone case with print: Decorative {pn.lower()} print for {m17}, easy to pair with MagSafe chargers and accessories",
+     f"Precise fit: Made for {fits} with a camera cutout that keeps the lens area open",
+     f"Clear TPU back: 2.12 mm thick TPU back panel lets your phone color show through the {pn.lower()} print",
+     f"{pn} design: {d}",
+     "Slim, lightweight protection: Guards against everyday scratches and bumps while keeping the phone easy to hold",
     ]
     desc=(f"{BRAND} clear phone case with {pn} design for {fits}.\n\n"
-          f"{detail}.\n\n"
+          f"{d}.\n\n"
           f"The case has a built-in magnetic ring compatible with MagSafe chargers and accessories. The ring uses an N45 magnet with 2300 Gs magnetic strength; outer diameter 55 mm, inner diameter 46 mm, thickness 1.4 mm. "
           f"The back panel is 2.12 mm thick TPU, and the camera cutout leaves the lens area open. The clear back lets your phone color show through the print.\n\n"
+          f"Slim, lightweight protection against everyday scratches and bumps.\n\n"
           f"Compatible with {fits}.")
     return dict(title=title,hl=hl,bullets=b,desc=desc,model=model,pn=pn)
 def checks(o):
@@ -57,10 +72,17 @@ if __name__=="__main__":
     R=rows(); pick={}
     for r in R:
         mdl=r[5].strip()
-        if mdl in("Apple iPhone 17 Pro Max","Apple iPhone 13","Apple iPhone 14") and mdl not in pick: pick[mdl]=r
-    for mdl,r in pick.items():
-        o=build(r); e,tb=checks(o)
-        print("\n=====",r[1],"|",mdl)
-        print("TITLE",len(o['title']),o['title']); print("HL",len(o['hl']),o['hl'])
-        for i,x in enumerate(o['bullets']): print(f"B{i+1} ({len(x)})",x)
-        print("bullet bytes",tb,"| DESC",len(o['desc'])); print(o['desc']); print("ERRORS:",e)
+        if mdl in("Apple iPhone 17 Pro Max","Apple iPhone 13") and len(pick.setdefault(mdl,[]))<3: pick[mdl].append(r)
+    for mdl,L in pick.items():
+        for r in L:
+            o=build(r); e,tb=checks(o)
+            print("\n=====",r[1],"|",mdl,"|",r[4]); print("TITLE",len(o['title']),o['title']); print("HL",len(o['hl']),o['hl'])
+            for i,x in enumerate(o['bullets']): print(f"B{i+1} ({len(x)})",x)
+            print("bullet bytes",tb,"| DESC",len(o['desc']),"| ERRORS:",e)
+    allerr=collections.Counter(); titles=collections.Counter(); trunc=0
+    for r in R:
+        o=build(r); e,_=checks(o); titles[o['title']]+=1
+        for x in e: allerr[re.sub(r"\d+","N",x)]+=1
+        if o['pn'].lower()!=o['title'].split(", ")[1].lower(): trunc+=1
+    print("\nALL",len(R),"errors:",dict(allerr),"| unique titles:",len(titles),"| titles with shortened print:",trunc)
+    print("dup titles sample:",[t for t,c in titles.items() if c>1][:3])
