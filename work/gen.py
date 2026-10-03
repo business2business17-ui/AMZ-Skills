@@ -23,35 +23,51 @@ def short_print(pn,budget):
         if len(cand)<=budget: out=cand
         else: break
     return out or words[0]
-def build(r):
+def build(r,variant=0):
     model,pn,detail=parse(r)
     m17,m18=models_txt(model)
     if m18:
-        mt=f"iPhone {m18.split()[1]}/{m17.split()[1]} {' '.join(m17.split()[2:])}"   # iPhone 18/17 Pro Max
+        mt=f"iPhone {m18.split()[1]}/{m17.split()[1]} {' '.join(m17.split()[2:])}"
         fits=f"{m18} and {m17}"; hl_fit=f"{m18}/{m17.replace('iPhone ','')}"
     else:
         mt=m17; fits=m17; hl_fit=m17
+    suf=" Pattern" if variant else ""
     head=f"{BRAND} Clear Magnetic Case for {mt}"
-    budget=75-len(head)-2                  # ", " separator
+    budget=75-len(head)-2-len(suf)
     ps=short_print(pn,budget)
-    title=f"{head}, {ps}"
-    hl=f"{pn} print on a clear case; fits {hl_fit}; magnetic ring compatible with MagSafe"
-    if len(hl)>125: hl=f"{pn} clear case; fits {hl_fit}; magnet ring compatible with MagSafe"
+    title=f"{head}, {ps}{suf}"
+    noun="pattern" if variant else "print"
+    hl=f"{pn} {noun} on a clear case; fits {hl_fit}; magnetic ring compatible with MagSafe"
+    if len(hl)>125: hl=f"{pn} {noun} clear case; fits {hl_fit}; magnet ring compatible with MagSafe"
     d=(detail[0].upper()+detail[1:]) if detail else "Decorative print on the clear back"
+    fit_txt=f"Precise fit for {fits} with a camera cutout that keeps the lens area open"
     b=[
-     "Magnetic ring: Built-in ring compatible with MagSafe chargers and accessories; N45 magnet, 2300 Gs, 55 mm outer and 46 mm inner diameter",
-     f"Precise fit: Made for {fits} with a camera cutout that keeps the lens area open",
-     f"Clear TPU back: 2.12 mm thick TPU back panel lets your phone color show through the {pn.lower()} print",
-     f"{pn} design: {d}",
+     "MagSafe compatible magnetic ring: Built-in ring compatible with MagSafe chargers and accessories; N45 magnet, 2300 Gs, 55 mm outer and 46 mm inner diameter",
+     f"Clear {m17} case: {fit_txt}" if m18 else f"Clear {m17} case: Precise fit with a camera cutout that keeps the lens area open",
+     f"Clear TPU back: 2.12 mm thick TPU back panel lets your phone color show through the {pn.lower()} {noun}",
+     f"{pn} {noun} design: {d}",
      "Slim, lightweight protection: Guards against everyday scratches and bumps while keeping the phone easy to hold",
     ]
-    desc=(f"{BRAND} clear phone case with {pn} design for {fits}.\n\n"
+    desc=(f"{BRAND} clear magnetic phone case with {pn} {noun} for {fits}.\n\n"
           f"{d}.\n\n"
-          f"The case has a built-in magnetic ring compatible with MagSafe chargers and accessories. The ring uses an N45 magnet with 2300 Gs magnetic strength; outer diameter 55 mm, inner diameter 46 mm, thickness 1.4 mm. "
-          f"The back panel is 2.12 mm thick TPU, and the camera cutout leaves the lens area open. The clear back lets your phone color show through the print.\n\n"
+          f"Does it work with MagSafe? The case has a built-in magnetic ring compatible with MagSafe chargers and accessories. The ring uses an N45 magnet with 2300 Gs magnetic strength; outer diameter 55 mm, inner diameter 46 mm, thickness 1.4 mm.\n\n"
+          f"What is it made of? The back panel is 2.12 mm thick TPU, clear so your phone color shows through the {noun}. The camera cutout leaves the lens area open.\n\n"
           f"Slim, lightweight protection against everyday scratches and bumps.\n\n"
-          f"Compatible with {fits}.")
+          f"Which phones does it fit? Compatible with {fits}.")
     return dict(title=title,hl=hl,bullets=b,desc=desc,model=model,pn=pn)
+# Backend: only words whose phrases passed Search Volume >= 500 in Cerebro / Helium 10 (checked 2026-10-03)
+NO_FORRO={"14","15 pro","16 pro"}          # "forro para iphone N" below 500 SV
+def backend(model,o):
+    key=model.replace("Apple iPhone ","").strip().lower()
+    gen=key.split()[0]
+    t=["transparent","funda","fundas","para","cover","cases"]
+    if key not in NO_FORRO: t.insert(4,"forro")
+    if key in("13","14","15","16","17"): t.append(f"iphone{gen}")
+    if key in("16 pro","17 pro"): t.append(f"iphone{gen}pro")
+    vis=" ".join([o['title'],o['hl'],*o['bullets'],o['desc']]).lower()
+    vt=set(re.findall(r"[a-zñ0-9]+",vis))
+    t=[w for w in t if w not in vt]
+    return " ".join(t)
 def checks(o):
     errs=[]
     t=o['title']
