@@ -10,6 +10,7 @@ def load():
         if "described" in f: continue
         ws=openpyxl.load_workbook(f).active
         rows=list(ws.iter_rows(values_only=True)); h=rows[0]; i={n:k for k,n in enumerate(h)}
+        if 'Search Volume' not in i: continue
         for r in rows[1:]:
             kw=str(r[0]).strip().lower(); sv=num(r[i['Search Volume']]); ks=num(r[i['Keyword Sales']])
             if sv is None or ks is None: continue

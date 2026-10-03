@@ -23,7 +23,7 @@ def short_print(pn,budget):
         if len(cand)<=budget: out=cand
         else: break
     return out or words[0]
-def build(r,variant=0):
+def _build(r,variant=0):
     model,pn,detail=parse(r)
     m17,m18=models_txt(model)
     if m18:
@@ -55,6 +55,14 @@ def build(r,variant=0):
           f"Slim, lightweight protection against everyday scratches and bumps.\n\n"
           f"Which phones does it fit? Compatible with {fits}.")
     return dict(title=title,hl=hl,bullets=b,desc=desc,model=model,pn=pn)
+_US=[(r"watercolour","watercolor"),(r"colourful","colorful"),(r"colours","colors"),(r"colour","color"),(r"greys","grays"),(r"grey","gray"),(r"centred","centered"),(r"centres","centers"),(r"centre","center"),(r"cosy","cozy")]
+def us(t):
+    for a,b in _US:
+        t=re.sub(a,b,t); t=re.sub(a.capitalize(),b.capitalize(),t)
+    return t
+def us_all(o):
+    o=dict(o); o['title']=us(o['title']); o['hl']=us(o['hl']); o['bullets']=[us(x) for x in o['bullets']]; o['desc']=us(o['desc']); o['pn']=us(o['pn']); return o
+def build(r,variant=0): return us_all(_build(r,variant))
 # Backend: only words whose phrases passed Search Volume >= 500 in Cerebro / Helium 10 (checked 2026-10-03)
 NO_FORRO={"14","15 pro","16 pro"}          # "forro para iphone N" below 500 SV
 def backend(model,o):
