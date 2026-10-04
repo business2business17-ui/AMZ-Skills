@@ -42,7 +42,16 @@ rules(wb,"SEO Rules 215",[("Field","Rule applied in series 215 (clear MagSafe ca
 ("Models","11 models as in '215 Amazon 29.09 - модели исправлено.xlsx' (1639 SKU). iPhone 16 and 16 Pro Max (298 SKU) were removed from the table by the owner and are not written","Owner file"),
 ("Duplicates","Catalog shows q177/q199 and q189/q202/q207 are different prints (sizes), so no duplicate-title workaround is used; every title is unique","Catalog print names")])
 wb.save("/home/user/AMZ-Skills/work/215_Amazon_29.09_SEO.xlsx")
-out2=gen2.load223(); wb=openpyxl.load_workbook(R+"223/223 Amazon New 17.09 - with prints.xlsx"); sheet(wb,"SEO 223",out2,False)
+out2=gen2.load223()
+UNCHK={"002","003","006","008","029","056","078","171","172","173","174","175","176","197"}
+NOTES={"078":"Recognizable painting (looks like American Gothic by Grant Wood): Claude observation, verify rights before upload",
+       "171":"Park name in artwork text (Acadia): Claude observation, verify trademark/licensing","172":"Park name in artwork text (Grand Canyon): Claude observation, verify trademark/licensing",
+       "173":"Park name in artwork text (Joshua Tree): Claude observation, verify trademark/licensing","174":"Park name in artwork text (Yellowstone): Claude observation, verify trademark/licensing",
+       "175":"Park name in artwork text (Yosemite): Claude observation, verify trademark/licensing","176":"Park name in artwork text (Zion): Claude observation, verify trademark/licensing"}
+for o in out2:
+    if o.get("policy") is None and o["q"] in UNCHK:
+        o["policy"]=(o["q"],o["pn"],"CHECK","Not covered by 215 policy check","",NOTES.get(o["q"],"Print exists only in series 223, not covered by the 215 policy check"))
+wb=openpyxl.load_workbook(R+"223/223 Amazon New 17.09 - with prints.xlsx"); sheet(wb,"SEO 223",out2,False)
 rules(wb,"SEO Rules 223",[("Field","Rule applied in series 223 (colored MagSafe cases)","Source / status")]+COMMON+[
 ("Color / finish in title","F02 = Black Smoky Matte (black frame), F05 = Frosted Clear Matte (frame color NOT stated: catalog shows white on some prints and taupe on others), F06 = Gray Frosted Matte (black frame), F16 = Orange (no Matte; solid soft-touch). Follows the owner's Case Color column (Black / Clear / Grey (Black Frame) / Orange)","Owner file 'with prints' (Case Color), catalog pictures"),
 ("Print colors","Bullet 4 and description use the Color Name column (e.g. Black / Red) as the print palette","Owner file"),
