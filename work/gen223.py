@@ -29,7 +29,7 @@ FIN={
  "Black Smoky":dict(back="Smoky matte back",txt="2.12 mm thick TPU back panel with a translucent smoky dark grey matte finish, black frame and black buttons",hl="black smoky matte"),
  "Black Frosted":dict(back="Frosted matte back",txt="2.12 mm thick TPU back panel with a translucent light frosted grey finish, black frame and black buttons",hl="black frosted matte"),
  "White Frosted":dict(back="Frosted matte back",txt="2.12 mm thick TPU back panel with a translucent frosted clear finish, white frame and white buttons",hl="white frosted matte"),
- "Orange":dict(back="Solid orange finish",txt="Opaque soft-touch orange case with an orange camera surround and orange buttons; 2.12 mm thick TPU back panel",hl="orange matte"),
+ "Orange":dict(back="Solid orange finish",txt="Opaque soft-touch orange case with an orange camera surround and orange buttons; 2.12 mm thick TPU back panel",hl="orange soft-touch"),
 }
 def parse(r):
     col,pn=[x.strip() for x in r[4].split("/",1)]
@@ -38,7 +38,7 @@ def parse(r):
     return col,pn,detail
 def _build(r,variant=0,tier="A"):
     col,pn,detail=parse(r); mt,fits,_=model_info(r[5]); suf=" Pattern" if variant else ""
-    mid="Matte Magnetic Case" if tier=="A" else "Matte Case"
+    mid=("Matte Magnetic Case" if tier=="A" else "Matte Case") if col!="Orange" else ("Magnetic Case" if tier=="A" else "Case")
     head=f"{BRAND} {col} {mid} for {mt}"
     ps=short_print(pn,75-len(head)-2-len(suf)); title=f"{head}, {ps}{suf}"
     noun="pattern" if variant else "print"
@@ -49,17 +49,23 @@ def _build(r,variant=0,tier="A"):
     if len(hl)>125: hl=f"{short_print(pn,24)} {noun}, {f['hl']} case; fits {mt}; magnet ring compatible with MagSafe"
     d=(detail[0].upper()+detail[1:]) if detail else "Decorative print on the case back"
     single=(fits==mt)
+    fin_word="Orange" if col=="Orange" else "Matte"
     b=[
      "MagSafe compatible magnetic ring: Built-in ring compatible with MagSafe chargers and accessories; N45 magnet, 2300 Gs, 55 mm outer and 46 mm inner diameter",
-     f"Matte {mt} case: Precise fit with a camera cutout that keeps the lens area open" if single else f"Matte {mt} case: Precise fit for {fits} with a camera cutout that keeps the lens area open",
+     f"{fin_word} {mt} case: Precise fit with a camera cutout that keeps the lens area open" if single else f"{fin_word} {mt} case: Precise fit for {fits} with a camera cutout that keeps the lens area open",
      f"{f['back']}: {f['txt'] if col!='Orange' else f['txt']}",
      f"{pn} {noun} design: {d}",
      "Slim, lightweight protection: Guards against everyday scratches and bumps while keeping the phone easy to hold",
     ]
-    desc=(f"{BRAND} {col.lower()} matte magnetic phone case with {pn} {noun} for {fits}.\n\n{d}.\n\n"
+    kind="soft-touch" if col=="Orange" else "matte"
+    finq=("What finish does it have? Solid opaque orange soft-touch finish with an orange camera surround and orange buttons." if col=="Orange"
+          else f"Is the case matte? Yes. The back is a translucent {'smoky' if 'Smoky' in col else 'frosted'} matte finish; {f['txt'].split(' finish, ')[1]}.")
+    desc=(f"{BRAND} {col.lower()} {kind} magnetic phone case with {pn} {noun} for {fits}.\n\n{d}.\n\n"
           f"Does it work with MagSafe? The case has a built-in magnetic ring compatible with MagSafe chargers and accessories. The ring uses an N45 magnet with 2300 Gs magnetic strength; outer diameter 55 mm, inner diameter 46 mm, thickness 1.4 mm.\n\n"
-          f"What is it made of and how does it look? {f['txt'][0].upper()+f['txt'][1:]}. The camera cutout leaves the lens area open.\n\n"
-          f"Slim, lightweight protection against everyday scratches and bumps.\n\nWhich phones does it fit? Compatible with {fits}.")
+          f"{finq}\n\n"
+          f"What is it made of? {('2.12 mm thick TPU back panel' if col!='Orange' else 'Opaque soft-touch case with a 2.12 mm thick TPU back panel')}. The camera cutout leaves the lens area open.\n\n"
+          f"What is it for? Everyday protection against scratches and bumps in a slim, lightweight case, and use with MagSafe chargers and accessories.\n\n"
+          f"Which phones does it fit? Compatible with {fits}.")
     return dict(title=title,hl=hl,bullets=b,desc=desc,col=col,pn=pn,model=r[5].strip())
 
 _US=[(r"watercolour","watercolor"),(r"colourful","colorful"),(r"colours","colors"),(r"colour","color"),(r"greys","grays"),(r"grey","gray"),(r"centred","centered"),(r"centres","centers"),(r"centre","center"),(r"cosy","cozy")]

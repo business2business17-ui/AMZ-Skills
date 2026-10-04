@@ -51,8 +51,9 @@ def _build(r,variant=0):
     desc=(f"{BRAND} clear magnetic phone case with {pn} {noun} for {fits}.\n\n"
           f"{d}.\n\n"
           f"Does it work with MagSafe? The case has a built-in magnetic ring compatible with MagSafe chargers and accessories. The ring uses an N45 magnet with 2300 Gs magnetic strength; outer diameter 55 mm, inner diameter 46 mm, thickness 1.4 mm.\n\n"
-          f"What is it made of? The back panel is 2.12 mm thick TPU, clear so your phone color shows through the {noun}. The camera cutout leaves the lens area open.\n\n"
-          f"Slim, lightweight protection against everyday scratches and bumps.\n\n"
+          f"What is it made of? The back panel is 2.12 mm thick TPU. The camera cutout leaves the lens area open.\n\n"
+          f"Is it clear? Yes. The 2.12 mm TPU back is clear, so your phone color shows through the {noun}.\n\n"
+          f"What is it for? Everyday protection against scratches and bumps in a slim, lightweight case, and use with MagSafe chargers and accessories.\n\n"
           f"Which phones does it fit? Compatible with {fits}.")
     return dict(title=title,hl=hl,bullets=b,desc=desc,model=model,pn=pn)
 _US=[(r"watercolour","watercolor"),(r"colourful","colorful"),(r"colours","colors"),(r"colour","color"),(r"greys","grays"),(r"grey","gray"),(r"centred","centered"),(r"centres","centers"),(r"centre","center"),(r"cosy","cozy")]
