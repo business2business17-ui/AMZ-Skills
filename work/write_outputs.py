@@ -28,7 +28,8 @@ def rules(wb,name,rows):
 COMMON=[("Title (max 75)","Brand + product type + color/finish + model + print name; print name is cut at a clean word boundary when it does not fit; no ! $ ? _ { } ^ ¬ ¦; no word more than twice","CONFIRMED: Amazon title requirements text (user-provided md, also in repo SEO-IPhone-Case)"),
 ("Item Highlight (max 125)","Continues the title and does not repeat it: first the part of the print name that was cut from the title (if any), then what the title lacks: ring compatible with MagSafe chargers and accessories; 2.12 mm TPU back; camera cutout","Limit user-provided; continuation rule: owner 2026-10-04"),
 ("Bullets (5)","Header: description; capital first letter; no end period; no emoji or special characters; 10-255 chars each; first 1000 bytes of all five indexed; no repeats between bullets","Format CONFIRMED (Amazon text); 255 and 1000-byte limits user-provided"),
-("Description (max 2000)","Plain short paragraphs with question-answer lines for Rufus/COSMO readability; facts only","2000 user-provided; Rufus/COSMO/A9-A10 reliance is industry inference (COSMO itself is a real Amazon system, SIGMOD 2024)"),
+("Description (max 2000)","GENERAL description (owner request 2026-10-04): no print name and no print-specific details, only the product, finish, MagSafe ring, TPU back, fit and use, written as short question-answer paragraphs for Rufus/COSMO readability","2000 user-provided; Rufus/COSMO/A9-A10 reliance is industry inference (COSMO itself is a real Amazon system, SIGMOD 2024)"),
+("Trigger names removed","Print names in title, Item Highlight and bullet 4 use neutral names: place and park names, meme/anime/sticker-collage/painting/fresco terms, violent words, league-like words and the word Apple were replaced (see sheet Print name map). The catalog names stay in the source tables. IMPORTANT: renaming does not change the artwork; HIGH and CHECK prints still carry the third-party content shown in the policy columns","Owner request 2026-10-04; policy columns from owner file"),
 ("Backend (max 250 bytes)","Only words from phrases with Search Volume >= 500 (Helium 10, 2026-10-03) that are not already in visible text","Helium 10 analyze_keywords"),
 ("Print names","Taken from the owner's catalog tables built from the PDF catalogs (old SKU = catalog SKU, model code replaced by xxx). Old Excel Color / Pattern names and the old per-print description sentences are NOT used (138 of 149 names differed from catalog, descriptions not verified against pictures). Names spot-checked against catalog pictures (215 page 1, 223 pages 1 and 12): match","Owner rule 2026-10-04: print must come from the PDF catalogs"),
 ("MagSafe wording","magnetic ring compatible with MagSafe chargers and accessories; never certified, never Made for MagSafe, never Apple","Owner decision"),
@@ -37,11 +38,21 @@ COMMON=[("Title (max 75)","Brand + product type + color/finish + model + print n
 ("Model fit","iPhone 18 Pro = 17 Pro, 18 Pro Max = 17 Pro Max, 16e = 17e (identical dimensions)","Owner statement 2026-10-04, not independently verified"),
 ("Policy risk columns","Columns K-M carry the risk level from '215 Amazon policy check.xlsx' (HIGH rows are filled red: the owner's own recommendation is do not upload until the artwork is changed)","Owner policy check")]
 R=gen2.R
+def namemap(wb,out):
+    if "Print name map" in wb.sheetnames: del wb["Print name map"]
+    ws=wb.create_sheet("Print name map"); ws.append(["Print #","Catalog name (source tables)","Name used in text","Reason","Policy risk (215 file)"])
+    seen={}
+    for o in out:
+        if o["pn"]!=gen2.clean_pn(o["pn_orig"]) and o["q"] not in seen:
+            p=o.get("policy"); seen[o["q"]]=("q"+o["q"].lstrip("0").zfill(3),o["pn_orig"],o["pn"],gen2.PRINT_MAP.get(re.sub(r"\s+"," ",o["pn_orig"]).strip(),("",""))[1],p[2] if p else "")
+    for k in sorted(seen): ws.append(list(seen[k]))
+    for c in ws[1]: c.font=Font(bold=True); c.fill=BLUE
+    for col,wd in zip("ABCDE",[10,58,44,46,18]): ws.column_dimensions[col].width=wd
 out=gen2.load215(); wb=openpyxl.load_workbook(R+"215/215 Amazon 29.09 — модели исправлено.xlsx"); sheet(wb,"SEO 215",out,True)
 rules(wb,"SEO Rules 215",[("Field","Rule applied in series 215 (clear MagSafe cases)","Source / status")]+COMMON+[
 ("Models","11 models as in '215 Amazon 29.09 - модели исправлено.xlsx' (1639 SKU). iPhone 16 and 16 Pro Max (298 SKU) were removed from the table by the owner and are not written","Owner file"),
 ("Duplicates","Catalog shows q177/q199 and q189/q202/q207 are different prints (sizes), so no duplicate-title workaround is used; every title is unique","Catalog print names")])
-wb.save("/home/user/AMZ-Skills/work/215_Amazon_29.09_SEO.xlsx")
+namemap(wb,out); wb.save("/home/user/AMZ-Skills/work/215_Amazon_29.09_SEO.xlsx")
 out2=gen2.load223()
 UNCHK={"002","003","006","008","029","056","078","171","172","173","174","175","176","197"}
 NOTES={"078":"Recognizable painting (looks like American Gothic by Grant Wood): Claude observation, verify rights before upload",
@@ -57,5 +68,5 @@ rules(wb,"SEO Rules 223",[("Field","Rule applied in series 223 (colored MagSafe 
 ("Print colors","Bullet 4 and description use the Color Name column (e.g. Black / Red) as the print palette","Owner file"),
 ("Matte / frosted / translucent","Used on purpose in title, Item Highlight, bullets 2-3 and description Q&A although Cerebro has no such case phrases and Helium 10 shows SV >= 500 only for the 17 line","Owner decision 2026-10-04"),
 ("Duplicates","13 exact duplicate rows of the source table removed (2739 -> 2726 SKU)","Source table")])
-wb.save("/home/user/AMZ-Skills/work/223_Amazon_with_prints_SEO.xlsx")
+namemap(wb,out2); wb.save("/home/user/AMZ-Skills/work/223_Amazon_with_prints_SEO.xlsx")
 print("saved",len(out),len(out2))

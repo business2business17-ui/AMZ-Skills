@@ -7,6 +7,71 @@ def us(t):
     for a,b in _US:
         t=re.sub(a,b,t); t=re.sub(a.capitalize(),b.capitalize(),t)
     return t
+
+# Trigger words removed from print names used in text (title, Item Highlight, bullet 4). Catalog names stay in the source tables.
+PRINT_MAP={
+ # policy HIGH / MEDIUM / LOW (from owner's 215 policy check)
+ "Pink Retro Sticker Collage (Papaya & Strawberry)":("Pink Retro Fruit Collage","policy HIGH: sticker collage"),
+ "Matcha Girlie Sticker Collage":("Green Retro Collage","policy HIGH: sticker collage"),
+ "Pink Kittens Girly Sticker Collage":("Pink Kittens Collage","policy HIGH: sticker collage"),
+ "Retro Tech Tower with Cat (TV, Cassettes, Phones)":("Retro Tech Tower with Cat","policy HIGH: media reference"),
+ "Man in Bowler Hat with Green Apple Painting":("Man in Hat with Green Fruit Art","policy HIGH: artwork reference; word Apple"),
+ "Japanese JDM Car":("Japanese Sports Car","policy HIGH: car culture term"),
+ "Cali Sensor Thermal Landscape":("Thermal Mountain Landscape","policy HIGH: brand-like name"),
+ "California National Parks Stickers (Yosemite, Joshua Tree)":("Western Travel Badge Collage","policy HIGH: place names, stickers"),
+ "Japanese Retro Sticker Collage (Lucky Cat)":("Japanese Retro Collage","policy MEDIUM: sticker collage"),
+ "Teddy Bears & Kittens Sticker Collage":("Teddy Bears & Kittens Collage","policy MEDIUM: sticker collage"),
+ "Cherry Bomb Red Sticker Collage":("Red Cherry Collage","policy MEDIUM: song/band-like name"),
+ "Surreal Art Sticker Collage (Hearts & Faces)":("Surreal Hearts & Faces Collage","policy MEDIUM: sticker collage"),
+ "Funny Dogs Meme Sticker Collage":("Funny Dogs Collage","policy MEDIUM: meme"),
+ "Cat Meme Sticker Collage":("Funny Cats Collage","policy MEDIUM: meme"),
+ "Anime Girl in Strawberry Shirt":("Girl in Strawberry Shirt Illustration","policy MEDIUM: anime"),
+ "Surreal Cat & Guitar Vintage Collage":("Surreal Cat & Music Vintage Collage","policy MEDIUM: guitar trade dress"),
+ "Gothic Rabbit & Ghost Girl Woodcut":("Dark Rabbit & Girl Woodcut","policy MEDIUM: horror words"),
+ "Crowned Masked Figure Engraving":("Crowned Figure Engraving","policy MEDIUM: mask"),
+ "Hands Playing Piano Oil Painting":("Hands Playing Piano Art","policy MEDIUM: painting reference"),
+ "Fluffy White Lamb Oil Painting":("Fluffy White Lamb Art","policy MEDIUM: painting reference"),
+ "California Travel Stickers (Route 66, Death Valley)":("Retro Travel Stickers Collage","policy MEDIUM: place names"),
+ "Chopsticks Holding Mochi Hamster":("Chopsticks Holding Pink Mochi","policy LOW: character"),
+ "Reaching Hands Renaissance Fresco":("Reaching Hands Classic Art","policy LOW: artwork reference"),
+ "Sunflowers in Vase Oil Painting":("Sunflowers in Vase Art","policy LOW: artwork reference"),
+ "Great Japanese Wave Woodblock Print":("Great Japanese Wave Print","policy LOW: artwork reference"),
+ "Two Cherub Angels Painting":("Two Cherub Angels Art","policy LOW: artwork reference"),
+ "USA Postage Stamps Collage":("Vintage Postage Stamps Collage","policy LOW: postal marks"),
+ "Blood Gothic Horror Girl":("Dark Gothic Girl","policy LOW: violent word"),
+ "Gothic Bleeding Heart with Thorny Hands":("Dark Gothic Heart with Thorny Hands","policy LOW: violent word"),
+ "California Girl Gang License Plate":("Girl Gang License Plate","policy LOW: state plate"),
+ "Thin Blue Line Distressed Flag":("Distressed Flag with Blue Stripe","policy LOW: sensitive symbol"),
+ "Rejected Movie Script":("Movie Script Page","policy LOW: place name inside text"),
+ # 223-only prints not covered by the policy check
+ "Japanese Anime Eyes Senpai":("Japanese Comic Eyes","223 only: anime term"),
+ "Farmer Couple with Pitchfork Painting":("Farmer Couple with Pitchfork Art","223 only: painting reference"),
+ "Acadia National Park Lighthouse & Moose":("Coastal Lighthouse & Moose Scene","223 only: park name"),
+ "Grand Canyon National Park with Eagle & Cactus":("Canyon Scene with Eagle & Cactus","223 only: park name"),
+ "Joshua Tree National Park Coyote & Roadrunner":("Desert Tree Coyote & Roadrunner Scene","223 only: park name"),
+ "Yellowstone National Park Bison & Geyser":("Bison & Geyser Wilderness Scene","223 only: park name"),
+ "Yosemite National Park Bear & Waterfall":("Bear & Waterfall Wilderness Scene","223 only: park name"),
+ "Zion National Park Bighorn Sheep & Canyon":("Bighorn Sheep & Canyon Scene","223 only: park name"),
+ # place names, brand-like words and the word Apple found by name scan
+ "Desert Canyon Road (Monument Valley)":("Desert Canyon Road","place name"),
+ "El Capitan Topographic Map Carabiner":("Topographic Map Carabiner","place name"),
+ "9.0 Richter Vibe California Seismograph":("9.0 Richter Vibe Seismograph","place name"),
+ "Stay Cool California Pool Water":("Stay Cool Pool Water","place name"),
+ "Stay Cool California Groovy Flowers":("Stay Cool Groovy Flowers","place name"),
+ "California Golden State Poppies & Bear":("Golden Poppies & Bear","place name"),
+ "California Poppies with Coastal Sunset":("Poppies with Coastal Sunset","place name"),
+ "Highway 1 Pacific Coast Highway Badge":("Coastal Road Badge","place name"),
+ "HWY 1 Big Sur Coastal Road":("Coastal Cliff Road","place name"),
+ "California Sunset Palms":("Sunset Palms","place name"),
+ "Vapor Sunset Strip Receipt with Stickers":("Sunset Receipt with Stickers","place name"),
+ "Red Apples on Blue Wavy Stripes":("Red Fruit on Blue Wavy Stripes","word Apple"),
+ "American Football Rugby Sport Emblem":("Football Rugby Sport Emblem","league-like word"),
+ "American Basketball Sport Emblem":("Basketball Sport Emblem","league-like word"),
+ "Rugby / American Football Player Sport Graphic":("Rugby Football Player Sport Graphic","league-like word"),
+}
+def generic_name(pn):
+    k=re.sub(r"\s+"," ",pn).strip()
+    return PRINT_MAP[k][0] if k in PRINT_MAP else k
 def clean_pn(pn):
     return us(re.sub(r"\s+"," ",pn).strip())
 def words(pn): return [w for w in re.sub(r"\([^)]*\)","",pn).split()]
@@ -104,7 +169,7 @@ def build215(sku,model,pn,taken):
        "Clear TPU back: 2.12 mm thick TPU back panel in a transparent finish, so your phone color shows through the print",
        (f"{pn} design: " if pn[0].isalpha() else "Print design: ")+(f"Decorative print on the clear back, with the phone color visible around the artwork" if pn[0].isalpha() else f"{pn}, a decorative print on the clear back, with the phone color visible around the artwork"),
        B5]
-    desc=(f"{BRAND} clear magnetic phone case with {pn} print for {fits}.\n\n"
+    desc=(f"{BRAND} clear magnetic phone case with a decorative print design for {fits}.\n\n"
           f"Does it work with MagSafe? The case has a built-in magnetic ring compatible with MagSafe chargers and accessories. The ring uses an N45 magnet with 2300 Gs magnetic strength; outer diameter 55 mm, inner diameter 46 mm, thickness 1.4 mm.\n\n"
           f"What is it made of? The back panel is 2.12 mm thick TPU. The camera cutout leaves the lens area open.\n\n"
           f"Is it clear? Yes. The TPU back is clear, so your phone color shows through around the print.\n\n"
@@ -131,8 +196,7 @@ def build223(sku,model,pn,fcode,cname,taken):
     finq=("What finish does it have? Solid opaque orange soft-touch finish with an orange camera surround and orange buttons." if fcode=="F16"
           else (f"Is the case matte? Yes. The back is a translucent {f['ask']} matte finish; {f['txt'].split(' finish, ')[1]}." if ' finish, ' in f['txt'] else f"Is the case matte? Yes. The back is a translucent {f['ask']} matte finish."))
     madeof=("Opaque soft-touch case with a 2.12 mm thick TPU back panel" if fcode=="F16" else "2.12 mm thick TPU back panel")
-    desc=(f"{BRAND} {f['lead'].lower().replace(' case','')} magnetic phone case with {pn} print for {fits}.\n\n"
-          f"Print colors: {pal}.\n\n"
+    desc=(f"{BRAND} {f['lead'].lower().replace(' case','')} magnetic phone case with a decorative print design for {fits}.\n\n"
           f"Does it work with MagSafe? The case has a built-in magnetic ring compatible with MagSafe chargers and accessories. The ring uses an N45 magnet with 2300 Gs magnetic strength; outer diameter 55 mm, inner diameter 46 mm, thickness 1.4 mm.\n\n"
           f"{finq}\n\n"
           f"What is it made of? {madeof}. The camera cutout leaves the lens area open.\n\n"
@@ -162,7 +226,7 @@ def load215():
     pol={r[0]:r for r in openpyxl.load_workbook(R+"215/215 Amazon policy check.xlsx")["Policy check"].iter_rows(min_row=2,values_only=True)}
     out=[]; taken=collections.defaultdict(set)
     for r in rows:
-        q=re.search(r"q(\d+)$",r[0]).group(1); o=build215(r[1],r[2],names[q],taken[r[2]])
+        q=re.search(r"q(\d+)$",r[0]).group(1); o=build215(r[1],r[2],generic_name(names[q]),taken[r[2]]); o['pn_orig']=names[q]
         taken[r[2]].add(o['ps'].lower()); o['q']=q; o['old']=r[0]; o['policy']=pol.get("q"+q); out.append(o)
     return out
 def load223():
@@ -174,7 +238,7 @@ def load223():
         if r[1] in seen: continue
         seen.add(r[1]); m=re.match(r"223(\w+?)-(F\d+)Ru001q(\d+)",r[0]); f,q=m.group(2),m.group(3)
         key=(r[2],f)
-        o=build223(r[1],r[2],r[11],f,r[13],taken[key]); taken[key].add(o['ps'].lower()); o['q']=q; o['f']=f; o['old']=r[0]
-        o['policy']=pol.get("q"+q) if c215.get(q)==o['pn'] or c215.get(q)==r[11] else None
+        o=build223(r[1],r[2],generic_name(r[11]),f,r[13],taken[key]); o['pn_orig']=r[11]; taken[key].add(o['ps'].lower()); o['q']=q; o['f']=f; o['old']=r[0]
+        o['policy']=pol.get("q"+q) if c215.get(q)==r[11] else None
         out.append(o)
     return out
