@@ -26,7 +26,7 @@ def rules(wb,name,rows):
     for row in ws.iter_rows(min_row=2):
         for c in row: c.alignment=Alignment(wrap_text=True,vertical="top")
 COMMON=[("Title (max 75)","Brand + product type + color/finish + model + print name; print name is cut at a clean word boundary when it does not fit; no ! $ ? _ { } ^ ¬ ¦; no word more than twice","CONFIRMED: Amazon title requirements text (user-provided md, also in repo SEO-IPhone-Case)"),
-("Item Highlight (max 125)","[Print name] print on a [finish] case; fits [model]; magnetic ring compatible with MagSafe","Limit user-provided"),
+("Item Highlight (max 125)","Continues the title and does not repeat it: first the part of the print name that was cut from the title (if any), then what the title lacks: ring compatible with MagSafe chargers and accessories; 2.12 mm TPU back; camera cutout","Limit user-provided; continuation rule: owner 2026-10-04"),
 ("Bullets (5)","Header: description; capital first letter; no end period; no emoji or special characters; 10-255 chars each; first 1000 bytes of all five indexed; no repeats between bullets","Format CONFIRMED (Amazon text); 255 and 1000-byte limits user-provided"),
 ("Description (max 2000)","Plain short paragraphs with question-answer lines for Rufus/COSMO readability; facts only","2000 user-provided; Rufus/COSMO/A9-A10 reliance is industry inference (COSMO itself is a real Amazon system, SIGMOD 2024)"),
 ("Backend (max 250 bytes)","Only words from phrases with Search Volume >= 500 (Helium 10, 2026-10-03) that are not already in visible text","Helium 10 analyze_keywords"),
@@ -53,7 +53,7 @@ for o in out2:
         o["policy"]=(o["q"],o["pn"],"CHECK","Not covered by 215 policy check","",NOTES.get(o["q"],"Print exists only in series 223, not covered by the 215 policy check"))
 wb=openpyxl.load_workbook(R+"223/223 Amazon New 17.09 - with prints.xlsx"); sheet(wb,"SEO 223",out2,False)
 rules(wb,"SEO Rules 223",[("Field","Rule applied in series 223 (colored MagSafe cases)","Source / status")]+COMMON+[
-("Color / finish in title","F02 = Black Smoky Matte (black frame), F05 = Frosted Clear Matte (frame color NOT stated: catalog shows white on some prints and taupe on others), F06 = Gray Frosted Matte (black frame), F16 = Orange (no Matte; solid soft-touch). Follows the owner's Case Color column (Black / Clear / Grey (Black Frame) / Orange)","Owner file 'with prints' (Case Color), catalog pictures"),
+("Color / finish in title","F02 = Black Smoky Matte (black frame), F05 = Clear Matte (owner decision: Clear; 'frosted' is kept in bullets and description; frame color NOT stated: catalog shows white on some prints and taupe on others), F06 = Gray Frosted Matte (black frame), F16 = Orange (no Matte; solid soft-touch). Follows the owner's Case Color column (Black / Clear / Grey (Black Frame) / Orange)","Owner file 'with prints' (Case Color), catalog pictures"),
 ("Print colors","Bullet 4 and description use the Color Name column (e.g. Black / Red) as the print palette","Owner file"),
 ("Matte / frosted / translucent","Used on purpose in title, Item Highlight, bullets 2-3 and description Q&A although Cerebro has no such case phrases and Helium 10 shows SV >= 500 only for the 17 line","Owner decision 2026-10-04"),
 ("Duplicates","13 exact duplicate rows of the source table removed (2739 -> 2726 SKU)","Source table")])

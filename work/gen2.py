@@ -60,6 +60,29 @@ def backend(model,vis_text,clear):
     toks=(TR if clear else "").split()+BK[key].split()
     return " ".join(w for w in toks if w not in vt)
 def article(w): return "an" if w[0].lower() in "aeiou" else "a"
+def remainder(pn,ps):
+    full=re.sub(r"\s+"," ",pn).strip()
+    if ps.lower()==full.lower(): return ""
+    if full.lower().startswith(ps.lower()): rem=full[len(ps):].strip()
+    else:
+        have={x.lower() for x in ps.split()}; rem=" ".join(w for w in full.split() if w.lower() not in have)
+    rem=re.sub(r"[()]","",rem).strip(" ;,")
+    return rem[:1].upper()+rem[1:] if rem else ""
+def hl_continue(pn,ps,clear,extra_first=()):
+    rem=remainder(pn,ps)
+    bases=(["Built-in ring compatible with MagSafe chargers and accessories","Ring compatible with MagSafe chargers and accessories","Ring compatible with MagSafe"] if clear
+           else ["Built-in magnetic ring compatible with MagSafe chargers and accessories","Magnetic ring compatible with MagSafe chargers","Magnetic ring compatible with MagSafe"])
+    extras=list(extra_first)+["2.12 mm TPU back","camera cutout"]
+    for base in bases:
+        head=(rem+"; " if rem else "")+base
+        if len(head)<=125:
+            for e in extras:
+                if len(head)+2+len(e)<=125: head+="; "+e
+            return head
+    # remainder too long: shorten it, keep the shortest base
+    base=bases[-1]; r=rem
+    while r and len(r+"; "+base)>125: r=" ".join(r.split()[:-1])
+    return (r+"; " if r else "")+base
 def common(model,pn,finish_hl,mt,fits,single):
     hl=f"{pn} print on {article(finish_hl)} {finish_hl} case; fits {mt}; magnetic ring compatible with MagSafe"
     if len(hl)>125: hl=f"{pn} print, {finish_hl} case; fits {mt}; magnet ring compatible with MagSafe"
@@ -75,7 +98,7 @@ def build215(sku,model,pn,taken):
     head=f"{BRAND} Clear Magnetic Case for {mt}"
     ps=fit_print(pn,75-len(head)-2,taken)
     title=f"{head}, {ps}"
-    hl=common(model,pn,"clear",mt,fits,single)
+    hl=hl_continue(pn,ps,True)
     b=[B1,
        f"Clear {mt} case: Precise fit with a camera cutout that keeps the lens area open" if single else f"Clear {mt} case: Precise fit for {fits} with a camera cutout that keeps the lens area open",
        "Clear TPU back: 2.12 mm thick TPU back panel in a transparent finish, so your phone color shows through the print",
@@ -89,14 +112,14 @@ def build215(sku,model,pn,taken):
           f"Which phones does it fit? Compatible with {fits}.")
     return us_all(dict(sku=sku,model=model,pn=pn,title=title,hl=hl,bullets=b,desc=desc,clear=True,ps=ps))
 F223={"F02":dict(lead="Black Smoky Matte Case",hl="black smoky matte",back="Smoky matte back",txt="2.12 mm thick TPU back panel with a translucent smoky dark gray matte finish, black frame and black buttons",fin="smoky matte back",ask="smoky"),
-      "F05":dict(lead="Frosted Clear Matte Case",hl="frosted clear matte",back="Frosted clear back",txt="2.12 mm thick TPU back panel with a translucent frosted clear matte finish",fin="frosted clear back",ask="frosted"),
+      "F05":dict(lead="Clear Matte Case",hl="frosted clear matte",back="Frosted clear back",txt="2.12 mm thick TPU back panel with a translucent frosted clear matte finish",fin="frosted clear back",ask="frosted"),
       "F06":dict(lead="Gray Frosted Matte Case",hl="gray frosted matte",back="Frosted gray back",txt="2.12 mm thick TPU back panel with a translucent light frosted gray matte finish, black frame and black buttons",fin="frosted gray back",ask="frosted"),
       "F16":dict(lead="Orange Case",hl="orange soft-touch",back="Solid orange finish",txt="Opaque soft-touch orange case with an orange camera surround and orange buttons; 2.12 mm thick TPU back panel",fin="solid orange back",ask=None)}
 def build223(sku,model,pn,fcode,cname,taken):
     f=F223[fcode]; mt,fits,_=minfo(model); single=(fits==mt); pn=clean_pn(pn)
     head=f"{BRAND} {f['lead']} for {mt}"
     ps=fit_print(pn,75-len(head)-2,taken); title=f"{head}, {ps}"
-    hl=common(model,pn,f["hl"],mt,fits,single)
+    hl=hl_continue(pn,ps,False,["soft-touch finish"] if fcode=="F16" else [])
     fw="Orange" if fcode=="F16" else "Matte"
     pal=palette(cname)
     b=[B1,
